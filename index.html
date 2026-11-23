@@ -6,6 +6,8 @@
 <meta name="theme-color" content="#8ac7fc">
 <meta name="description" content="Adopt a pixel cat and collect Nepali words as you care for it.">
 <title>Achoo · Pocket Cat</title>
+<link rel="manifest" href="app.webmanifest">
+<link rel="apple-touch-icon" href="icons/achoo-180.png">
 <link rel="stylesheet" href="achoo.css">
 </head>
 <body>
@@ -384,6 +386,13 @@ placeControls();
 if (state) showGame(true);
 else renderStats(startingStats);
 AchooPixels.animate(byId('scene'),() => ({coat,effect,effectUntil}));
+
+// Keep the standalone game available after its first online launch.
+if ('serviceWorker' in navigator && window.isSecureContext && location.protocol !== 'file:') {
+ navigator.serviceWorker.register('./sw.js').catch(error => {
+  console.warn('Achoo could not prepare offline play.', error);
+ });
+}
 
 </script>
 </body>

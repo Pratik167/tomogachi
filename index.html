@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#8ac7fc">
 <meta name="description" content="Adopt a pixel cat and collect Nepali words as you care for it.">
 <title>Achoo · Pocket Cat</title>
@@ -13,7 +13,7 @@
 <header class="wrap top" aria-label="Game tools">
   <button id="music" type="button" aria-pressed="false">Music</button>
   <button id="sounds" type="button" aria-pressed="true">Effects</button>
-  <button id="openBook" type="button" hidden>Wordbook <span id="count"></span></button>
+  <button id="openBook" type="button" aria-haspopup="dialog" hidden>Wordbook <span id="count"></span></button>
   <button id="newGame" type="button" aria-haspopup="dialog" hidden>New Game</button>
 </header>
 <main class="wrap layout">
@@ -33,11 +33,13 @@
               <canvas data-glyph="heart" width="11" height="11"></canvas>
               <canvas data-glyph="emptyHeart" width="11" height="11"></canvas>
             </div>
+            <h1 class="screen-title" id="screenTitle" hidden></h1>
             <p class="mood" id="mood">Ready to adopt</p>
           </div>
           <div class="room"><canvas id="scene" width="116" height="78" role="img" aria-label="Pixel cat on a green LCD screen"></canvas></div>
           <div class="stats" id="stats" aria-label="Cat stats"></div>
           <p class="caption" id="reaction" role="status">Someone’s been waiting for you.</p>
+          <div id="inlineControls"></div>
         </div>
       </div>
       <div class="tabs" role="group" aria-label="Care categories">
@@ -48,10 +50,10 @@
       <div class="speaker" aria-hidden="true"><i></i><i></i><i></i></div>
     </div>
   </section>
-  <section class="controls" aria-label="Pet controls">
-    <div class="panel-screen">
+  <section class="controls" id="sideControls" aria-label="Pet controls">
+    <div class="panel-screen" id="panelScreen">
       <div class="intro">
-        <h1 id="title">Meet your new cat</h1>
+        <h1 id="title" tabindex="-1">Meet your new cat</h1>
         <canvas class="panel-cat" data-panel-art="cat" width="22" height="14" aria-hidden="true"></canvas>
         <p id="subtitle">Choose a coat and name your little companion.</p>
       </div>
@@ -67,7 +69,7 @@
       </form>
       <div id="game" hidden>
         <div class="choices" id="choices" role="group" aria-label="Feed choices"></div>
-        <div class="word" id="word" role="status" hidden></div>
+        <div class="reward-slot"><div class="word" id="word" role="status" hidden></div></div>
       </div>
     </div>
     <div class="panel-keys" id="panelKeys" role="group" aria-label="Action panel shortcuts" hidden>
@@ -77,7 +79,7 @@
     </div>
   </section>
 </main>
-<footer class="wrap footer" id="saveNote" role="status">Progress saves in this browser on this device.</footer>
+<footer class="wrap footer" id="saveNote" role="status">Made For Achoo. --FeinT--</footer>
 <dialog id="book" aria-labelledby="bookTitle">
   <div class="dialog-head"><h2 id="bookTitle">Nepali wordbook</h2><form method="dialog"><button>Close</button></form></div>
   <div id="bookWords"></div>
@@ -96,6 +98,8 @@
 <script>
 'use strict';
 const byId = id => document.getElementById(id);
+const compactLayout = window.matchMedia('(max-width: 735px)');
+const footerMessage = byId('saveNote').textContent;
 const key = 'bluebell-cat-club-v1';
 const coats = ['blue','pink','cream'];
 const actions = {
@@ -122,6 +126,7 @@ let coat = 'blue';
 let category = 'Feed';
 let effect = '';
 let effectUntil = 0;
+let reactionMessage = byId('reaction').textContent;
 try {
  const saved = JSON.parse(localStorage.getItem(key));
  if (saved && typeof saved.name === 'string' && coats.includes(saved.coat)
@@ -173,8 +178,17 @@ function renderPet(){
   byId('mood').textContent = full < 35 ? 'A little hungry' : clean < 35 ? 'Needs a clean' : joy < 35 ? 'Wants to play' : Math.min(full,joy,clean) >= 75 ? 'Very happy' : 'Feeling cozy';
   byId('count').textContent = state.learned.length + '/' + words.length;
 }
+function showReaction(message){
+ reactionMessage = message;
+ byId('reaction').textContent = state && !compactLayout.matches
+  ? state.name + ' ' + message
+  : message.charAt(0).toUpperCase() + message.slice(1);
+}
 function showGame(returning){
  coat = state.coat;
+ document.body.classList.add('playing');
+ byId('screenTitle').textContent = state.name;
+ byId('screenTitle').hidden = false;
  byId('adopt').hidden = true;
  byId('game').hidden = false;
  byId('panelKeys').hidden = false;
@@ -183,7 +197,7 @@ function showGame(returning){
  document.querySelectorAll('[data-category]').forEach(button => { button.disabled = false; });
  byId('title').textContent = state.name + '’s room';
  byId('subtitle').textContent = returning ? 'Welcome back! Your cat is happy to see you.' : 'Your cat is home. Try feeding, playing, or grooming.';
- byId('reaction').textContent = returning ? state.name + ' was waiting for you.' : state.name + ' is settling in.';
+ showReaction(returning ? 'was waiting for you.' : 'is settling in.');
  renderPet();
  renderChoices();
 }
@@ -201,6 +215,8 @@ function startOver(){
  category = 'Feed';
  effect = '';
  effectUntil = 0;
+ document.body.classList.remove('playing');
+ byId('screenTitle').hidden = true;
  byId('resetDialog').close();
  byId('game').hidden = true;
  byId('panelKeys').hidden = true;
@@ -221,13 +237,14 @@ function startOver(){
  byId('title').textContent = 'Meet your new cat';
  byId('subtitle').textContent = 'Choose a coat and name your little companion.';
  byId('mood').textContent = 'Ready to adopt';
- byId('reaction').textContent = 'Someone’s been waiting for you.';
- byId('saveNote').textContent = 'Progress saves in this browser on this device.';
+ showReaction('Someone’s been waiting for you.');
+ byId('saveNote').textContent = footerMessage;
  byId('adopt').reset();
  byId('adopt').hidden = false;
  byId('name').setCustomValidity('');
  renderStats(startingStats);
- byId('name').focus();
+ if (compactLayout.matches) byId('title').focus({preventScroll:true});
+ else byId('name').focus();
 }
 function panelIcon(name){
  const canvas = document.createElement('canvas');
@@ -272,7 +289,7 @@ function takeAction(action){
  AchooSound.play(category, !learned);
  effect = action.effect;
  effectUntil = performance.now() + 1250;
- byId('reaction').textContent = state.name + ' ' + action.reaction;
+ showReaction(action.reaction);
  const card = byId('word');
  const copy = document.createElement('div');
  const term = document.createElement('strong');
@@ -298,10 +315,6 @@ function selectCategory(nextCategory){
 }
 for (const button of document.querySelectorAll('[data-category]')) button.addEventListener('click',() => {
  selectCategory(button.dataset.category);
- const firstChoice = byId('choices').firstElementChild;
- if (window.matchMedia('(max-width: 735px)').matches && firstChoice.getBoundingClientRect().bottom > window.innerHeight - 12) {
-  firstChoice.scrollIntoView({block:'nearest',behavior:'instant'});
- }
 });
 byId('previousCategory').addEventListener('click',() => selectCategory(adjacentCategory(-1)));
 byId('nextCategory').addEventListener('click',() => selectCategory(adjacentCategory(1)));
@@ -319,7 +332,8 @@ byId('adopt').addEventListener('submit',event => {
  save();
  showGame(false);
  AchooSound.play('adopt');
- byId('choices').firstElementChild.focus();
+ byId('choices').firstElementChild.focus({preventScroll:compactLayout.matches});
+ if (compactLayout.matches) window.scrollTo(0,0);
 });
 function openWordbook(){
  const content = byId('bookWords');
@@ -359,6 +373,14 @@ setInterval(() => {
 },120000);
 AchooPixels.decorate();
 AchooSound.connect(byId('music'),byId('sounds'));
+function placeControls(){
+ const panel = byId('panelScreen');
+ const destination = byId(compactLayout.matches ? 'inlineControls' : 'sideControls');
+ destination.prepend(panel);
+ showReaction(reactionMessage);
+}
+compactLayout.addEventListener('change',placeControls);
+placeControls();
 if (state) showGame(true);
 else renderStats(startingStats);
 AchooPixels.animate(byId('scene'),() => ({coat,effect,effectUntil}));

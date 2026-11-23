@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#8ac7fc">
+<meta name="description" content="Adopt a pixel cat and collect Nepali words as you care for it.">
+<title>Achoo · Pocket Cat</title>
+<link rel="stylesheet" href="achoo.css">
+</head>
+<body>
+<div class="sky" aria-hidden="true"><i class="cloud"></i><i class="cloud"></i><i class="cloud"></i><i class="cloud"></i></div>
+<header class="wrap top" aria-label="Game tools">
+  <button id="music" type="button" aria-pressed="false">Music</button>
+  <button id="sounds" type="button" aria-pressed="true">Effects</button>
+  <button id="openBook" type="button" hidden>Wordbook <span id="count"></span></button>
+  <button id="newGame" type="button" aria-haspopup="dialog" hidden>New Game</button>
+</header>
+<main class="wrap layout">
+  <section class="device" aria-label="Achoo pocket cat">
+    <div class="eyelet" aria-hidden="true"></div>
+    <div class="shell">
+      <div class="faceplate">
+        <canvas class="sticker" data-glyph="sparkle" data-sticker width="13" height="13" aria-hidden="true"></canvas>
+        <div class="logo" role="img" aria-label="Achoo"><canvas id="logo" width="38" height="18" aria-hidden="true"></canvas></div>
+        <canvas class="sticker" data-glyph="heart" data-sticker width="13" height="13" aria-hidden="true"></canvas>
+      </div>
+      <div class="bezel">
+        <div class="lcd">
+          <div class="lcd-top">
+            <div class="hearts" aria-hidden="true">
+              <canvas data-glyph="heart" width="11" height="11"></canvas>
+              <canvas data-glyph="heart" width="11" height="11"></canvas>
+              <canvas data-glyph="emptyHeart" width="11" height="11"></canvas>
+            </div>
+            <p class="mood" id="mood">Ready to adopt</p>
+          </div>
+          <div class="room"><canvas id="scene" width="116" height="78" role="img" aria-label="Pixel cat on a green LCD screen"></canvas></div>
+          <div class="stats" id="stats" aria-label="Cat stats"></div>
+          <p class="caption" id="reaction" role="status">Someone’s been waiting for you.</p>
+        </div>
+      </div>
+      <div class="tabs" role="group" aria-label="Care categories">
+        <button type="button" data-category="Feed" aria-pressed="true" disabled><span class="keycap" aria-hidden="true"><canvas data-glyph="bowl" width="11" height="11"></canvas></span>Feed</button>
+        <button type="button" data-category="Play" aria-pressed="false" disabled><span class="keycap" aria-hidden="true"><canvas data-glyph="gamepad" width="11" height="11"></canvas></span>Play</button>
+        <button type="button" data-category="Care" aria-pressed="false" disabled><span class="keycap" aria-hidden="true"><canvas data-glyph="sparkle" width="11" height="11"></canvas></span>Care</button>
+      </div>
+      <div class="speaker" aria-hidden="true"><i></i><i></i><i></i></div>
+    </div>
+  </section>
+  <section class="controls" aria-label="Pet controls">
+    <div class="panel-screen">
+      <div class="intro">
+        <h1 id="title">Meet your new cat</h1>
+        <canvas class="panel-cat" data-panel-art="cat" width="22" height="14" aria-hidden="true"></canvas>
+        <p id="subtitle">Choose a coat and name your little companion.</p>
+      </div>
+      <form id="adopt">
+        <div class="coats" role="group" aria-label="Coat color">
+          <button type="button" data-coat="blue" aria-pressed="true"><span aria-hidden="true" style="--coat:#9cc8ff"></span>Blue</button>
+          <button type="button" data-coat="pink" aria-pressed="false"><span aria-hidden="true" style="--coat:#f4add5"></span>Pink</button>
+          <button type="button" data-coat="cream" aria-pressed="false"><span aria-hidden="true" style="--coat:#ffe0b4"></span>Cream</button>
+        </div>
+        <label for="name">Cat’s name</label>
+        <input id="name" name="name" placeholder="e.g. Achoo" required maxlength="22" autocomplete="off">
+        <button class="primary" type="submit">Bring my cat home</button>
+      </form>
+      <div id="game" hidden>
+        <div class="choices" id="choices" role="group" aria-label="Feed choices"></div>
+        <div class="word" id="word" role="status" hidden></div>
+      </div>
+    </div>
+    <div class="panel-keys" id="panelKeys" role="group" aria-label="Action panel shortcuts" hidden>
+      <button id="previousCategory" type="button" aria-label="Previous care category"><canvas data-panel-art="previous" width="13" height="13" aria-hidden="true"></canvas></button>
+      <button id="panelBook" type="button" aria-haspopup="dialog" aria-label="Open Nepali wordbook" title="Open Nepali wordbook"><canvas data-panel-art="cat" width="22" height="14" aria-hidden="true"></canvas></button>
+      <button id="nextCategory" type="button" aria-label="Next care category"><canvas data-panel-art="next" width="13" height="13" aria-hidden="true"></canvas></button>
+    </div>
+  </section>
+</main>
+<footer class="wrap footer" id="saveNote" role="status">Progress saves in this browser on this device.</footer>
+<dialog id="book" aria-labelledby="bookTitle">
+  <div class="dialog-head"><h2 id="bookTitle">Nepali wordbook</h2><form method="dialog"><button>Close</button></form></div>
+  <div id="bookWords"></div>
+</dialog>
+<dialog id="resetDialog" aria-labelledby="resetTitle" aria-describedby="resetDescription">
+  <h2 id="resetTitle">Start a new game?</h2>
+  <p id="resetDescription">This will delete your cat, its stats, and all the words you’ve learned in this browser.</p>
+  <p id="resetError" role="alert" hidden></p>
+  <form class="reset-actions" method="dialog">
+    <button type="submit" autofocus>Keep playing</button>
+    <button id="confirmReset" type="button">Start over</button>
+  </form>
+</dialog>
+<script src="pixels.js"></script>
+<script src="sound.js"></script>
+<script>
+'use strict';
+const byId = id => document.getElementById(id);
+const key = 'bluebell-cat-club-v1';
+const coats = ['blue','pink','cream'];
+const actions = {
+ Feed:[
+  {label:'Serve rice',art:'rice',word:['भात','bhat','cooked rice'],stat:'full',gain:22,reaction:'finished a little bowl of rice.',effect:'♥'},
+  {label:'Offer water',art:'water',word:['पानी','pani','water'],stat:'full',gain:10,reaction:'took a few sips of water.',effect:'♥'}
+ ],
+ Play:[
+  {label:'Roll a ball',art:'ball',word:['बल','bal','ball'],stat:'joy',gain:23,reaction:'pounced on the ball!',effect:'✦'},
+  {label:'Play hide-and-seek',art:'hide',word:['लुकामारी','lukamari','hide-and-seek'],stat:'joy',gain:19,reaction:'found the perfect hiding spot.',effect:'✦'}
+ ],
+ Care:[
+  {label:'Wipe their face',art:'wash',word:['मुख धुनु','mukh dhunu','to wash your face'],stat:'clean',gain:25,reaction:'has a squeaky-clean face.',effect:'✧'},
+  {label:'Brush their fur',art:'comb',word:['काइँयो','kaiyo','comb'],stat:'clean',gain:18,reaction:'purred through brushing time.',effect:'✧'}
+ ]
+};
+const categories = Object.keys(actions);
+const words = Object.values(actions).flat().map(action => action.word);
+const metrics = [['full','Fullness','bowl'],['joy','Happiness','smile'],['clean','Cleanliness','sparkle']];
+const startingStats = {full:64,joy:62,clean:70};
+const clamp = value => Math.min(100,Math.max(0,value));
+let state = null;
+let coat = 'blue';
+let category = 'Feed';
+let effect = '';
+let effectUntil = 0;
+try {
+ const saved = JSON.parse(localStorage.getItem(key));
+ if (saved && typeof saved.name === 'string' && coats.includes(saved.coat)
+   && metrics.every(([id]) => Number.isFinite(saved.stats?.[id]))) {
+  state = {name:saved.name,coat:saved.coat,stats:Object.fromEntries(metrics.map(([id]) => [id,clamp(saved.stats[id])])),
+   learned:Array.isArray(saved.learned) ? [...new Set(saved.learned.filter(item => words.some(word => word[0] === item)))] : []};
+ }
+} catch {}
+function save(){
+ try { localStorage.setItem(key,JSON.stringify(state)); }
+ catch { byId('saveNote').textContent = 'This browser could not save progress. Your cat is still here while this page stays open.'; }
+}
+function renderStats(stats){
+  const container = byId('stats');
+  container.replaceChildren();
+  for (const [id,label,glyph] of metrics){
+    const value = stats[id];
+    const stat = document.createElement('div');
+    stat.className = 'stat';
+    const icon = document.createElement('canvas');
+    icon.width = icon.height = 11;
+    icon.setAttribute('aria-hidden','true');
+    AchooPixels.icon(icon,glyph,'#273a32');
+    const meter = document.createElement('div');
+    meter.className = 'track';
+    meter.setAttribute('role','meter');
+    meter.setAttribute('aria-label',label);
+    meter.setAttribute('aria-valuemin','0');
+    meter.setAttribute('aria-valuemax','100');
+    meter.setAttribute('aria-valuenow',value);
+    meter.title = label + ' ' + value + '%';
+    for (let index = 0; index < 5; index++){
+      const segment = document.createElement('i');
+      segment.classList.toggle('filled',index < Math.round(value / 20));
+      meter.append(segment);
+    }
+    const caption = document.createElement('span');
+    caption.textContent = label;
+    stat.append(icon,caption,meter);
+    container.append(stat);
+  }
+  const hearts = document.querySelectorAll('.hearts canvas');
+  const filled = Math.round(stats.joy * hearts.length / 100);
+  hearts.forEach((heart,index) => AchooPixels.icon(heart,index < filled ? 'heart' : 'emptyHeart','#273a32'));
+}
+function renderPet(){
+  renderStats(state.stats);
+  const {full,joy,clean} = state.stats;
+  byId('mood').textContent = full < 35 ? 'A little hungry' : clean < 35 ? 'Needs a clean' : joy < 35 ? 'Wants to play' : Math.min(full,joy,clean) >= 75 ? 'Very happy' : 'Feeling cozy';
+  byId('count').textContent = state.learned.length + '/' + words.length;
+}
+function showGame(returning){
+ coat = state.coat;
+ byId('adopt').hidden = true;
+ byId('game').hidden = false;
+ byId('panelKeys').hidden = false;
+ byId('openBook').hidden = false;
+ byId('newGame').hidden = false;
+ document.querySelectorAll('[data-category]').forEach(button => { button.disabled = false; });
+ byId('title').textContent = state.name + '’s room';
+ byId('subtitle').textContent = returning ? 'Welcome back! Your cat is happy to see you.' : 'Your cat is home. Try feeding, playing, or grooming.';
+ byId('reaction').textContent = returning ? state.name + ' was waiting for you.' : state.name + ' is settling in.';
+ renderPet();
+ renderChoices();
+}
+function startOver(){
+ const error = byId('resetError');
+ try {
+  localStorage.removeItem(key);
+ } catch {
+  error.textContent = 'This browser couldn’t clear your save. Please try again.';
+  error.hidden = false;
+  return;
+ }
+ state = null;
+ coat = 'blue';
+ category = 'Feed';
+ effect = '';
+ effectUntil = 0;
+ byId('resetDialog').close();
+ byId('game').hidden = true;
+ byId('panelKeys').hidden = true;
+ byId('openBook').hidden = true;
+ byId('newGame').hidden = true;
+ byId('word').hidden = true;
+ byId('word').replaceChildren();
+ byId('choices').replaceChildren();
+ byId('bookWords').replaceChildren();
+ byId('count').textContent = '';
+ for (const button of document.querySelectorAll('[data-category]')){
+  button.disabled = true;
+  button.setAttribute('aria-pressed',button.dataset.category === category);
+ }
+ for (const button of document.querySelectorAll('[data-coat]')){
+  button.setAttribute('aria-pressed',button.dataset.coat === coat);
+ }
+ byId('title').textContent = 'Meet your new cat';
+ byId('subtitle').textContent = 'Choose a coat and name your little companion.';
+ byId('mood').textContent = 'Ready to adopt';
+ byId('reaction').textContent = 'Someone’s been waiting for you.';
+ byId('saveNote').textContent = 'Progress saves in this browser on this device.';
+ byId('adopt').reset();
+ byId('adopt').hidden = false;
+ byId('name').setCustomValidity('');
+ renderStats(startingStats);
+ byId('name').focus();
+}
+function panelIcon(name){
+ const canvas = document.createElement('canvas');
+ canvas.width = canvas.height = 16;
+ canvas.setAttribute('aria-hidden','true');
+ AchooPixels.panelArt(canvas,name);
+ return canvas;
+}
+function adjacentCategory(direction){
+ return categories[(categories.indexOf(category) + direction + categories.length) % categories.length];
+}
+function renderChoices(){
+ for (const button of document.querySelectorAll('[data-category]')) button.setAttribute('aria-pressed',button.dataset.category === category);
+ const choices = byId('choices');
+ choices.replaceChildren();
+ choices.setAttribute('aria-label',category + ' choices');
+ for (const [id,direction] of [['previousCategory',-1],['nextCategory',1]]){
+  const button = byId(id);
+  const label = (direction < 0 ? 'Previous' : 'Next') + ' care category: ' + adjacentCategory(direction);
+  button.setAttribute('aria-label',label);
+  button.title = label;
+ }
+ for (const action of actions[category]){
+  const button = document.createElement('button');
+  button.type = 'button';
+  const label = document.createElement('span');
+  label.textContent = action.label;
+  const hint = document.createElement('small');
+  hint.textContent = '+' + action.gain + ' ' + metrics.find(([id]) => id === action.stat)[1].toLowerCase();
+  button.append(panelIcon(action.art),label,hint);
+  button.addEventListener('click',() => takeAction(action));
+  choices.append(button);
+ }
+}
+function takeAction(action){
+ state.stats[action.stat] = clamp(state.stats[action.stat] + action.gain);
+ const [script,roman,meaning] = action.word;
+ const learned = state.learned.includes(script);
+ if (!learned) state.learned.push(script);
+ save();
+ renderPet();
+ AchooSound.play(category, !learned);
+ effect = action.effect;
+ effectUntil = performance.now() + 1250;
+ byId('reaction').textContent = state.name + ' ' + action.reaction;
+ const card = byId('word');
+ const copy = document.createElement('div');
+ const term = document.createElement('strong');
+ const nepaliWord = document.createElement('span');
+ const translation = document.createElement('p');
+ nepaliWord.lang = 'ne';
+ nepaliWord.textContent = script;
+ term.append(learned ? 'Review · ' : 'New word · ',nepaliWord);
+ translation.textContent = roman + ' · ' + meaning;
+ copy.append(term,translation);
+ card.replaceChildren(copy,panelIcon(action.art));
+ card.hidden = false;
+}
+for (const button of document.querySelectorAll('[data-coat]')) button.addEventListener('click',() => {
+ coat = button.dataset.coat;
+ AchooSound.play('tap');
+ for (const other of document.querySelectorAll('[data-coat]')) other.setAttribute('aria-pressed',other === button);
+});
+function selectCategory(nextCategory){
+ category = nextCategory;
+ AchooSound.play('tap');
+ renderChoices();
+}
+for (const button of document.querySelectorAll('[data-category]')) button.addEventListener('click',() => {
+ selectCategory(button.dataset.category);
+ const firstChoice = byId('choices').firstElementChild;
+ if (window.matchMedia('(max-width: 735px)').matches && firstChoice.getBoundingClientRect().bottom > window.innerHeight - 12) {
+  firstChoice.scrollIntoView({block:'nearest',behavior:'instant'});
+ }
+});
+byId('previousCategory').addEventListener('click',() => selectCategory(adjacentCategory(-1)));
+byId('nextCategory').addEventListener('click',() => selectCategory(adjacentCategory(1)));
+byId('name').addEventListener('input',event => event.target.setCustomValidity(''));
+byId('adopt').addEventListener('submit',event => {
+ event.preventDefault();
+ const input = byId('name');
+ const name = input.value.trim();
+ if (!name) {
+  input.setCustomValidity('Give your cat a name first.');
+  input.reportValidity();
+  return;
+ }
+ state = {name,coat,stats:{...startingStats},learned:[]};
+ save();
+ showGame(false);
+ AchooSound.play('adopt');
+ byId('choices').firstElementChild.focus();
+});
+function openWordbook(){
+ const content = byId('bookWords');
+ content.replaceChildren();
+ if (!state.learned.length) content.textContent = 'Care for your cat to discover your first word.';
+ else {
+  const list = document.createElement('ul');
+  for (const id of state.learned){
+   const [script,roman,meaning] = words.find(word => word[0] === id);
+   const row = document.createElement('li');
+   const term = document.createElement('strong');
+   const detail = document.createElement('span');
+   term.textContent = script;
+   term.lang = 'ne';
+   detail.textContent = ' · ' + roman + ' · ' + meaning;
+   row.append(term,detail);
+   list.append(row);
+  }
+  content.append(list);
+ }
+ byId('book').showModal();
+ AchooSound.play('tap');
+}
+byId('openBook').addEventListener('click',openWordbook);
+byId('panelBook').addEventListener('click',openWordbook);
+byId('newGame').addEventListener('click',() => {
+ byId('resetError').hidden = true;
+ byId('resetDialog').showModal();
+});
+byId('confirmReset').addEventListener('click',startOver);
+// Time spent in the visible room gently changes the cat’s needs.
+setInterval(() => {
+ if (!state || document.hidden) return;
+ for (const [id] of metrics) state.stats[id] = Math.max(25,state.stats[id] - 2);
+ save();
+ renderPet();
+},120000);
+AchooPixels.decorate();
+AchooSound.connect(byId('music'),byId('sounds'));
+if (state) showGame(true);
+else renderStats(startingStats);
+AchooPixels.animate(byId('scene'),() => ({coat,effect,effectUntil}));
+
+</script>
+</body>
+</html>

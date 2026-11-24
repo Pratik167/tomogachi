@@ -293,8 +293,7 @@ button:focus-visible, input:focus-visible {
 }
 .controls::before, .controls::after,
 .panel-screen::before, .panel-screen::after,
-.choices button::before, .choices button::after,
-.word::before, .word::after {
+.choices button::before, .choices button::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -387,30 +386,8 @@ input { width: 100%; min-height: 42px; padding: 7px 9px; color: var(--ink); back
 }
 .choices button:hover::after, .choices button:focus-visible::after { background: #fff0f8; }
 .choices button:active::after { inset-block: 4px 2px; }
-.choices button canvas, .word canvas { display: block; width: 100%; height: auto; image-rendering: pixelated; }
+.choices button canvas { display: block; width: 100%; height: auto; image-rendering: pixelated; }
 .choices small { text-align: right; font-size: .72rem; font-weight: 650; }
-.word {
-  position: relative;
-  isolation: isolate;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 34px;
-  align-items: center;
-  gap: 4px;
-  margin-top: 11px;
-  padding: 9px 11px 11px;
-  color: #582857;
-  --cut: 8px;
-  --step: 4px;
-}
-.word::before { background: #a64b87; }
-.word::after {
-  inset: 2px 2px 4px;
-  background: #ffe1ef;
-  box-shadow: inset 0 2px #fff5fa, inset 0 -2px #eeb1d2;
-}
-.word strong { font: 700 .91rem/1.25 var(--pixel); }
-.word strong [lang="ne"] { font-family: system-ui, sans-serif; }
-.word p { margin: 3px 0 0; color: #653c64; font-size: .84rem; }
 .panel-keys {
   display: flex;
   align-items: center;
@@ -438,17 +415,11 @@ input { width: 100%; min-height: 42px; padding: 7px 9px; color: var(--ink); back
 .panel-keys button:hover { background: #ffeaf7; }
 .panel-keys button:active { transform: translateY(2px); box-shadow: inset 0 2px #fff5fa, 0 1px #376aa9; }
 .panel-keys canvas { width: 22px; height: auto; image-rendering: pixelated; }
-#panelBook canvas { width: 30px; }
 .footer { padding: 19px 0 8px; text-align: center; color: var(--muted); font-size: .76rem; }
 
 dialog { width: min(92vw, 430px); max-height: 85vh; padding: 20px; color: var(--ink); background: #eef5ff; border: 3px solid #537bb0; border-radius: 16px; box-shadow: 0 13px 35px #132d5990; }
 dialog::backdrop { background: #132d5980; }
-.dialog-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 dialog button { padding: 5px 9px; }
-#bookWords { margin-top: 12px; }
-dialog ul { list-style: none; padding: 0; margin: 0; }
-dialog li { border-bottom: 1px solid #9ab7da; padding: 8px 0; }
-dialog li span { color: var(--muted); }
 .reset-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
 .reset-actions button { min-height: 40px; }
 #confirmReset { color: #4c2251; background: #ffcae5; border-color: #a44a90; }
@@ -549,21 +520,6 @@ dialog li span { color: var(--muted); }
   .choices button:active { background: #f9d4e7; }
   .choices button:focus-visible { outline-offset: -4px; }
   .choices small { font-size: .65rem; }
-  .reward-slot { min-height: 52px; padding-top: 5px; }
-  .word {
-    grid-template-columns: minmax(0, 1fr) 23px;
-    gap: 4px;
-    margin: 0;
-    padding: 2px 6px 4px;
-    border: 2px solid #a64b87;
-    border-radius: 8px;
-    background: #ffe1ef;
-    box-shadow: inset 0 2px #fff5fa, inset 0 -2px #eeb1d2;
-    line-height: 1.22;
-  }
-  .word::before, .word::after { content: none; }
-  .word strong { font-size: .74rem; }
-  .word p { margin: 2px 0 0; font: .73rem/1.25 system-ui, sans-serif; }
   .tabs { margin: 8px -2% 0; }
   .tabs button { gap: 4px; }
   .keycap { width: 44px; }
@@ -578,5 +534,4 @@ dialog li span { color: var(--muted); }
   .shell { padding-inline: 6%; }
   .top button { padding-inline: 3px; font-size: .68rem; }
   .choices button { grid-template-columns: 20px minmax(0, 1fr) minmax(0, 6em); gap: 4px; }
-  .word { grid-template-columns: minmax(0, 1fr) 18px; gap: 3px; }
 }

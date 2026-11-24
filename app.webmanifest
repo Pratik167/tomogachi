@@ -2,7 +2,7 @@
   "id": "./",
   "name": "Achoo · Pocket Cat",
   "short_name": "Achoo",
-  "description": "Adopt a pixel cat and collect Nepali words as you care for it.",
+  "description": "Adopt a pixel cat and care for your pocket companion.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

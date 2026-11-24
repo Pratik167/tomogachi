@@ -27,8 +27,7 @@ const AchooSound = (() => {
     adopt: [[72,0,.12],[76,.09,.13],[79,.18,.15],[84,.28,.25]],
     Feed: [[60,0,.10],[64,.10,.10],[67,.20,.14]],
     Play: [[72,0,.09],[79,.08,.11],[74,.18,.09],[84,.26,.18]],
-    Care: [[69,0,.12],[76,.12,.14],[81,.24,.19]],
-    word: [[84,0,.10],[88,.09,.11],[91,.18,.20]]
+    Care: [[69,0,.12],[76,.12,.14],[81,.24,.19]]
   };
   const beat = 60 / 105;
   const events = [];
@@ -123,7 +122,7 @@ const AchooSound = (() => {
     if (context) musicGain.gain.setTargetAtTime(0, context.currentTime, .018);
   }
 
-  function play(name, newWord = false) {
+  function play(name) {
     if (!preferences.effects && !preferences.music) return;
     unlock().then(ready => {
       if (!ready) return;
@@ -131,9 +130,6 @@ const AchooSound = (() => {
       if (!preferences.effects || !effects[name]) return;
       const when = context.currentTime + .018;
       for (const [note, offset, length] of effects[name]) tone(effectsGain,note,when + offset,length,.065,'square');
-      if (newWord) {
-        for (const [note, offset, length] of effects.word) tone(effectsGain,note,when + .46 + offset,length,.065,'triangle');
-      }
     });
   }
 

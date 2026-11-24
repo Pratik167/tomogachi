@@ -4,6 +4,11 @@ const AchooSound = (() => {
   const preferenceKey = 'achoo-audio-v1';
   const Audio = window.AudioContext || window.webkitAudioContext;
   const preferences = {music:false, effects:true};
+  const catClips = {
+    meow: {path:'audio/meow.wav',volume:.55},
+    purr: {path:'audio/purr.wav',volume:.45}
+  };
+  const catPlayers = {};
   try {
     const saved = JSON.parse(localStorage.getItem(preferenceKey));
     if (typeof saved?.music === 'boolean') preferences.music = saved.music;
@@ -133,13 +138,24 @@ const AchooSound = (() => {
     });
   }
 
+  function playCat(name) {
+    if (!preferences.effects || !catClips[name]) return;
+    const {path,volume} = catClips[name];
+    const player = catPlayers[name] || (catPlayers[name] = new window.Audio(path));
+    player.pause();
+    player.currentTime = 0;
+    player.volume = volume;
+    player.play().catch(() => {});
+  }
+
   function connect(music, sfx) {
     musicButton = music;
     effectsButton = sfx;
     controls();
     if (!Audio) {
-      music.disabled = sfx.disabled = true;
-      return;
+      music.disabled = true;
+      preferences.music = false;
+      controls();
     }
 
     music.addEventListener('click', () => {
@@ -155,6 +171,7 @@ const AchooSound = (() => {
       save();
       controls();
       if (preferences.effects) play('tap');
+      else Object.values(catPlayers).forEach(player => player.pause());
     });
     function resumeMusic(event) {
       if (preferences.music && !event.target.closest?.('#music')) {
@@ -169,5 +186,5 @@ const AchooSound = (() => {
     });
   }
 
-  return {connect,play};
+  return {connect,play,playCat};
 })();

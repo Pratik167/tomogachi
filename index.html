@@ -273,6 +273,7 @@ function takeAction(action){
  save();
  renderPet();
  AchooSound.play(category);
+ AchooSound.playCat(category === 'Care' ? 'purr' : 'meow');
  effect = action.effect;
  effectUntil = performance.now() + 1250;
  lastInteraction = performance.now();
@@ -310,6 +311,7 @@ byId('adopt').addEventListener('submit',event => {
  save();
  showGame(false);
  AchooSound.play('adopt');
+ AchooSound.playCat('meow');
  byId('choices').firstElementChild.focus({preventScroll:compactLayout.matches});
  if (compactLayout.matches) window.scrollTo(0,0);
 });

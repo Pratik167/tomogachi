@@ -147,10 +147,14 @@ const AchooPixels = (() => {
       // Low head, curved back, and a ringed tail follow Muniii's photo.
       pixel(35,39,49,23,outline); pixel(40,35,35,5,outline);
       pixel(39,39,41,19,fur); pixel(47,37,23,19,fur);
-      for (const x of [48,57,66,75]) pixel(x,38,3,14,stripe);
+      for (const [x, y] of [[47,39],[56,37],[65,37],[73,40]]) {
+        pixel(x,y,5,3,stripe); pixel(x+2,y+3,3,7,stripe);
+      }
       pixel(78,45,7,14,stripe); pixel(82,53,5,8,outline);
-      pixel(43,57,41,5,outline); pixel(49,57,6,4,light);
-      pixel(61,57,6,4,light); pixel(75,57,6,4,light);
+      pixel(77,50,5,3,light); pixel(80,56,4,2,fur);
+      pixel(53,55,34,8,outline); pixel(56,56,27,5,fur);
+      for (const x of [61,69,77]) pixel(x,56,3,5,stripe);
+      pixel(43,57,11,5,outline); pixel(49,57,6,4,light);
       pixel(24,46,31,14,outline); pixel(28,44,26,14,fur);
       pixel(27,40,6,10,outline); pixel(29,43,3,6,ear);
       pixel(47,40,5,10,outline); pixel(48,43,3,5,ear);
@@ -165,12 +169,16 @@ const AchooPixels = (() => {
       pixel(42,47,40,14,outline); pixel(45,44,36,14,fur);
       for (const x of [50,60,69,76]) pixel(x,45,3,9,stripe);
       pixel(72,56,8,6,outline); pixel(74,57,5,3,light);
-      pixel(78,35,7,18,outline); pixel(82,30,7,7,stripe);
-      pixel(88,27,9,6,outline); pixel(89,28,5,3,fur);
+      pixel(78,42,8,14,outline); pixel(82,33,8,14,outline);
+      pixel(86,27,11,8,outline); pixel(93,31,5,9,outline);
+      pixel(81,45,4,8,fur); pixel(85,35,4,8,fur);
+      pixel(88,29,6,4,fur); pixel(94,33,2,4,fur);
+      pixel(82,41,4,3,stripe); pixel(88,31,4,3,stripe);
       pixel(30,27,31,25,outline); pixel(33,29,25,21,fur);
       pixel(32,22,6,11,outline); pixel(34,25,3,5,ear);
       pixel(53,22,6,11,outline); pixel(54,25,3,5,ear);
       for (const x of [39,46,53]) pixel(x,30,2,6,stripe);
+      pixel(34,35,4,2,stripe); pixel(54,35,4,2,stripe);
       pixel(37,39,5,3,eyes); pixel(50,39,5,3,eyes);
       pixel(39,39,2,3,outline); pixel(52,39,2,3,outline);
       pixel(43,44,5,3,light); pixel(45,45,2,2,ear);
@@ -190,11 +198,14 @@ const AchooPixels = (() => {
     pixel(71,51,10,10,outline); pixel(74,47,8,9,fur);
     pixel(78,42,6,8,outline); pixel(80,43,4,5,fur);
     pixel(75,52,5,3,stripe); pixel(79,45,3,3,stripe);
+    pixel(74,56,6,2,light); pixel(77,58,5,2,stripe);
     pixel(40,29,35,20,outline); pixel(43,27,29,23,fur);
     pixel(42,22,7,13,outline); pixel(45,25,3,7,ear);
     pixel(66,22,7,13,outline); pixel(67,25,3,7,ear);
     pixel(47,30,3,7,stripe); pixel(55,28,4,8,stripe); pixel(65,30,3,7,stripe);
     pixel(43,39,28,9,light); pixel(51,42,13,6,light);
+    pixel(42,36,5,2,stripe); pixel(69,36,5,2,stripe);
+    pixel(47,35,2,4,stripe); pixel(66,35,2,4,stripe);
     if (blink) {
       pixel(47,38,6,1,outline); pixel(62,38,6,1,outline);
     } else {

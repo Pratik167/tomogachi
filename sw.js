@@ -3,7 +3,7 @@
 // Keep this namespace scoped to the game, including on a shared GitHub Pages origin.
 const scope = self.registration.scope;
 const cachePrefix = `achoo-pocket-cat:${scope}:`;
-const cacheName = `${cachePrefix}v3`;
+const cacheName = `${cachePrefix}v4`;
 const home = new URL('./', scope);
 const gamePage = new URL('index.html', scope);
 const files = [
@@ -11,6 +11,8 @@ const files = [
   'achoo.css',
   'pixels.js',
   'sound.js',
+  'audio/meow.wav',
+  'audio/purr.wav',
   'app.webmanifest',
   'icons/achoo-180.png',
   'icons/achoo-192.png',

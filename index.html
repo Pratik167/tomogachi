@@ -63,6 +63,7 @@
           <button type="button" data-coat="blue" aria-pressed="true"><span aria-hidden="true" style="--coat:#9cc8ff"></span>Blue</button>
           <button type="button" data-coat="pink" aria-pressed="false"><span aria-hidden="true" style="--coat:#f4add5"></span>Pink</button>
           <button type="button" data-coat="cream" aria-pressed="false"><span aria-hidden="true" style="--coat:#ffe0b4"></span>Cream</button>
+          <button type="button" data-coat="muniii" aria-pressed="false"><span class="tabby-swatch" aria-hidden="true"></span>Muniii</button>
         </div>
         <label for="name">Cat’s name</label>
         <input id="name" name="name" placeholder="e.g. Achoo" required maxlength="22" autocomplete="off">
@@ -96,7 +97,7 @@ const byId = id => document.getElementById(id);
 const compactLayout = window.matchMedia('(max-width: 735px)');
 const footerMessage = byId('saveNote').textContent;
 const key = 'bluebell-cat-club-v1';
-const coats = ['blue','pink','cream'];
+const coats = ['blue','pink','cream','muniii'];
 const actions = {
  Feed:[
   {label:'Serve rice',art:'rice',stat:'full',gain:22,reaction:'finished a little bowl of rice.',effect:'♥'},
@@ -120,6 +121,7 @@ let coat = 'blue';
 let category = 'Feed';
 let effect = '';
 let effectUntil = 0;
+let lastInteraction = performance.now();
 let reactionMessage = byId('reaction').textContent;
 try {
  const saved = JSON.parse(localStorage.getItem(key));
@@ -206,6 +208,7 @@ function startOver(){
  category = 'Feed';
  effect = '';
  effectUntil = 0;
+ lastInteraction = performance.now();
  document.body.classList.remove('playing');
  byId('screenTitle').hidden = true;
  byId('resetDialog').close();
@@ -272,15 +275,18 @@ function takeAction(action){
  AchooSound.play(category);
  effect = action.effect;
  effectUntil = performance.now() + 1250;
+ lastInteraction = performance.now();
  showReaction(action.reaction);
 }
 for (const button of document.querySelectorAll('[data-coat]')) button.addEventListener('click',() => {
  coat = button.dataset.coat;
+ lastInteraction = performance.now();
  AchooSound.play('tap');
  for (const other of document.querySelectorAll('[data-coat]')) other.setAttribute('aria-pressed',other === button);
 });
 function selectCategory(nextCategory){
  category = nextCategory;
+ lastInteraction = performance.now();
  AchooSound.play('tap');
  renderChoices();
 }
@@ -300,6 +306,7 @@ byId('adopt').addEventListener('submit',event => {
   return;
  }
  state = {name,coat,stats:{...startingStats}};
+ lastInteraction = performance.now();
  save();
  showGame(false);
  AchooSound.play('adopt');
@@ -330,7 +337,7 @@ compactLayout.addEventListener('change',placeControls);
 placeControls();
 if (state) showGame(true);
 else renderStats(startingStats);
-AchooPixels.animate(byId('scene'),() => ({coat,effect,effectUntil}));
+AchooPixels.animate(byId('scene'),() => ({coat,effect,effectUntil,category,lastInteraction}));
 
 // Keep the standalone game available after its first online launch.
 if ('serviceWorker' in navigator && window.isSecureContext && location.protocol !== 'file:') {

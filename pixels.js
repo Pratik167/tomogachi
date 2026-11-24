@@ -134,7 +134,84 @@ const AchooPixels = (() => {
     }
   }
 
-  function drawCat(ctx, coat, blink, happy, offset) {
+  function drawMuniii(ctx, pose, blink, offset) {
+    const outline = '#29372f';
+    const fur = '#899487';
+    const light = '#c5cdb4';
+    const stripe = '#465449';
+    const ear = '#c995a6';
+    const eyes = '#778f69';
+    const pixel = (x, y, w, h, color) => rect(ctx, x, y + offset, w, h, color);
+
+    if (pose === 'napping') {
+      // Low head, curved back, and a ringed tail follow Muniii's photo.
+      pixel(35,39,49,23,outline); pixel(40,35,35,5,outline);
+      pixel(39,39,41,19,fur); pixel(47,37,23,19,fur);
+      for (const x of [48,57,66,75]) pixel(x,38,3,14,stripe);
+      pixel(78,45,7,14,stripe); pixel(82,53,5,8,outline);
+      pixel(43,57,41,5,outline); pixel(49,57,6,4,light);
+      pixel(61,57,6,4,light); pixel(75,57,6,4,light);
+      pixel(24,46,31,14,outline); pixel(28,44,26,14,fur);
+      pixel(27,40,6,10,outline); pixel(29,43,3,6,ear);
+      pixel(47,40,5,10,outline); pixel(48,43,3,5,ear);
+      for (const x of [34,41,48]) pixel(x,46,2,6,stripe);
+      pixel(31,52,6,1,outline); pixel(43,52,6,1,outline);
+      pixel(37,54,3,2,ear); pixel(35,56,7,1,outline);
+      pixel(19,54,8,1,outline); pixel(48,54,9,1,outline);
+      return;
+    }
+
+    if (pose === 'playing') {
+      pixel(42,47,40,14,outline); pixel(45,44,36,14,fur);
+      for (const x of [50,60,69,76]) pixel(x,45,3,9,stripe);
+      pixel(72,56,8,6,outline); pixel(74,57,5,3,light);
+      pixel(78,35,7,18,outline); pixel(82,30,7,7,stripe);
+      pixel(88,27,9,6,outline); pixel(89,28,5,3,fur);
+      pixel(30,27,31,25,outline); pixel(33,29,25,21,fur);
+      pixel(32,22,6,11,outline); pixel(34,25,3,5,ear);
+      pixel(53,22,6,11,outline); pixel(54,25,3,5,ear);
+      for (const x of [39,46,53]) pixel(x,30,2,6,stripe);
+      pixel(37,39,5,3,eyes); pixel(50,39,5,3,eyes);
+      pixel(39,39,2,3,outline); pixel(52,39,2,3,outline);
+      pixel(43,44,5,3,light); pixel(45,45,2,2,ear);
+      pixel(31,47,5,9,outline); pixel(32,52,7,7,fur);
+      pixel(27,55,13,5,outline); pixel(29,56,9,2,light);
+      pixel(50,53,6,10,outline); pixel(51,55,4,5,fur);
+      pixel(58,55,7,8,outline); pixel(59,56,5,5,light);
+      pixel(25,43,6,1,outline); pixel(56,44,6,1,outline);
+      return;
+    }
+
+    // The default sitting pose fits the existing 116 × 78 LCD scene.
+    pixel(43,44,30,19,outline); pixel(46,44,24,17,fur);
+    for (const x of [49,58,67]) pixel(x,46,2,11,stripe);
+    pixel(47,58,7,6,outline); pixel(48,59,5,3,light);
+    pixel(62,58,7,6,outline); pixel(63,59,5,3,light);
+    pixel(71,51,10,10,outline); pixel(74,47,8,9,fur);
+    pixel(78,42,6,8,outline); pixel(80,43,4,5,fur);
+    pixel(75,52,5,3,stripe); pixel(79,45,3,3,stripe);
+    pixel(40,29,35,20,outline); pixel(43,27,29,23,fur);
+    pixel(42,22,7,13,outline); pixel(45,25,3,7,ear);
+    pixel(66,22,7,13,outline); pixel(67,25,3,7,ear);
+    pixel(47,30,3,7,stripe); pixel(55,28,4,8,stripe); pixel(65,30,3,7,stripe);
+    pixel(43,39,28,9,light); pixel(51,42,13,6,light);
+    if (blink) {
+      pixel(47,38,6,1,outline); pixel(62,38,6,1,outline);
+    } else {
+      pixel(47,38,6,4,outline); pixel(62,38,6,4,outline);
+      pixel(49,38,3,3,eyes); pixel(64,38,3,3,eyes);
+      pixel(50,39,1,2,outline); pixel(65,39,1,2,outline);
+    }
+    pixel(55,43,5,2,ear); pixel(57,45,1,2,outline);
+    pixel(52,47,5,1,outline); pixel(58,47,5,1,outline);
+    pixel(35,42,9,1,outline); pixel(72,42,8,1,outline);
+  }
+
+  function drawCat(ctx, coat, blink, happy, offset, pose) {
+    if (coat === 'muniii') {
+      drawMuniii(ctx, pose, blink, pose === 'napping' ? 0 : offset);
+      return;
+    }
     const [fur, shade, highlight] = coatColors[coat];
     // Enlarge each pixel block with integer edges, anchored at the cat's feet.
     const scale = 1.24;
@@ -188,13 +265,15 @@ const AchooPixels = (() => {
     for (const x of [10,23,37,88,102]) pixel(x,69,5,1,'#9baa80');
 
     function frame(now) {
-      const {coat,effect,effectUntil} = readPet();
+      const {coat,effect,effectUntil,category,lastInteraction} = readPet();
       const active = now < effectUntil;
-      const offset = active && !reduced.matches ? -Math.round(Math.abs(Math.sin(now / 105)) * 5) : 0;
+      const pose = coat === 'muniii' && active && category === 'Play' ? 'playing'
+        : coat === 'muniii' && now - lastInteraction > 15000 ? 'napping' : 'sitting';
+      const offset = active && pose !== 'napping' && !reduced.matches ? -Math.round(Math.abs(Math.sin(now / 105)) * 5) : 0;
       const blink = !reduced.matches && now % 4300 > 4120;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(background, 0, 0);
-      drawCat(ctx, coat, blink, active, offset);
+      drawCat(ctx, coat, blink, active, offset, pose);
       if (active) {
         const rise = reduced.matches ? 0 : Math.floor((1250 - (effectUntil - now)) / 130);
         stamp(ctx, glyphs[effect === '♥' ? 'heart' : 'sparkle'], 78, 23 - rise, ink);

@@ -235,6 +235,7 @@ button:focus-visible, input:focus-visible {
 }
 
 .tabs, .coats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.coats { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; }
 .tabs { gap: clamp(4px, 2vw, 16px); margin: 14px -3% 0; }
 .tabs button {
   display: grid;
@@ -341,9 +342,10 @@ button:focus-visible, input:focus-visible {
 }
 .panel-cat { display: block; width: 55px; height: auto; image-rendering: pixelated; }
 .intro p { grid-column: 1 / -1; margin: 7px 0 0; font: .875rem/1.46 var(--pixel); }
-.coats button { padding: 7px 1px; min-height: 53px; font-size: .83rem; }
+.coats button { padding: 7px 1px; min-height: 53px; font-size: .75rem; }
 .coats button[aria-pressed="true"] { border-color: #28599a; background: #d6e9ff; box-shadow: inset 0 0 0 1px #28599a; }
 .coats span { display: block; width: 12px; height: 12px; margin: 0 auto 4px; box-shadow: 0 0 0 1px #5378a8; background: var(--coat); }
+.coats .tabby-swatch { background: repeating-linear-gradient(90deg, #40483c 0 3px, #929784 3px 6px); }
 form label { display: block; margin: 13px 0 4px; color: var(--ink); font-weight: 720; font-size: .86rem; }
 input { width: 100%; min-height: 42px; padding: 7px 9px; color: var(--ink); background: #fff; border: 2px solid #8bacd8; border-radius: 8px; }
 .primary {

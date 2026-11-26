@@ -97,6 +97,7 @@ const byId = id => document.getElementById(id);
 const compactLayout = window.matchMedia('(max-width: 735px)');
 const footerMessage = byId('saveNote').textContent;
 const key = 'bluebell-cat-club-v1';
+const needsInterval = 120000;
 const coats = ['blue','pink','cream','muniii'];
 const actions = {
  Feed:[
@@ -127,12 +128,30 @@ try {
  const saved = JSON.parse(localStorage.getItem(key));
  if (saved && typeof saved.name === 'string' && coats.includes(saved.coat)
    && metrics.every(([id]) => Number.isFinite(saved.stats?.[id]))) {
-  state = {name:saved.name,coat:saved.coat,stats:Object.fromEntries(metrics.map(([id]) => [id,clamp(saved.stats[id])]))};
+  const now = Date.now();
+  const lastNeedsUpdate = Number.isFinite(saved.lastNeedsUpdate) && saved.lastNeedsUpdate >= 0
+   && saved.lastNeedsUpdate <= now ? saved.lastNeedsUpdate : now;
+  state = {name:saved.name,coat:saved.coat,stats:Object.fromEntries(metrics.map(([id]) => [id,clamp(saved.stats[id])])),lastNeedsUpdate};
  }
 } catch {}
 function save(){
  try { localStorage.setItem(key,JSON.stringify(state)); }
  catch { byId('saveNote').textContent = 'This browser could not save progress. Your cat is still here while this page stays open.'; }
+}
+function updateNeeds(){
+ if (!state) return;
+ const now = Date.now();
+ if (now < state.lastNeedsUpdate) {
+  state.lastNeedsUpdate = now;
+  save();
+  return;
+ }
+ const elapsedIntervals = Math.floor((now - state.lastNeedsUpdate) / needsInterval);
+ if (elapsedIntervals < 1) return;
+ for (const [id] of metrics) state.stats[id] = Math.max(25,state.stats[id] - elapsedIntervals * 2);
+ state.lastNeedsUpdate += elapsedIntervals * needsInterval;
+ save();
+ renderPet();
 }
 function renderStats(stats){
   const container = byId('stats');
@@ -269,6 +288,7 @@ function renderChoices(){
  }
 }
 function takeAction(action){
+ updateNeeds();
  state.stats[action.stat] = clamp(state.stats[action.stat] + action.gain);
  save();
  renderPet();
@@ -306,7 +326,7 @@ byId('adopt').addEventListener('submit',event => {
   input.reportValidity();
   return;
  }
- state = {name,coat,stats:{...startingStats}};
+ state = {name,coat,stats:{...startingStats},lastNeedsUpdate:Date.now()};
  lastInteraction = performance.now();
  save();
  showGame(false);
@@ -320,13 +340,10 @@ byId('newGame').addEventListener('click',() => {
  byId('resetDialog').showModal();
 });
 byId('confirmReset').addEventListener('click',startOver);
-// Time spent in the visible room gently changes the cat’s needs.
-setInterval(() => {
- if (!state || document.hidden) return;
- for (const [id] of metrics) state.stats[id] = Math.max(25,state.stats[id] - 2);
- save();
- renderPet();
-},120000);
+// Save whole elapsed intervals so needs continue changing while the app is closed.
+setInterval(() => { if (!document.hidden) updateNeeds(); },30000);
+document.addEventListener('visibilitychange',() => { if (!document.hidden) updateNeeds(); });
+window.addEventListener('pageshow',updateNeeds);
 AchooPixels.decorate();
 AchooSound.connect(byId('music'),byId('sounds'));
 function placeControls(){
@@ -337,7 +354,11 @@ function placeControls(){
 }
 compactLayout.addEventListener('change',placeControls);
 placeControls();
-if (state) showGame(true);
+if (state) {
+ showGame(true);
+ updateNeeds();
+ save(); // Give existing saves a timestamp without charging for time before this update.
+}
 else renderStats(startingStats);
 AchooPixels.animate(byId('scene'),() => ({coat,effect,effectUntil,category,lastInteraction}));
 
